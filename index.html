@@ -1,1 +1,550 @@
-<h1>Hello</h1>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TERMINAL://TUTORIAL_INDEX.EXE</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: JetBrains Mono untuk teks tajam & VT323 untuk aksen retro -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=VT323&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --crt-fg: #3bf656;
+      --crt-bg: #070f07;
+      --crt-panel: #0d170d;
+      --crt-border: #2dd846;
+      --crt-dim: #133a18;
+      --crt-text-sub: #a8f0b0;
+      --crt-highlight: #6eff82;
+      --crt-badge: #1a4d22;
+    }
+
+    body.theme-amber {
+      --crt-fg: #ffb726;
+      --crt-bg: #110b03;
+      --crt-panel: #1a1205;
+      --crt-border: #f59e0b;
+      --crt-dim: #452803;
+      --crt-text-sub: #fde68a;
+      --crt-highlight: #fef08a;
+      --crt-badge: #573305;
+    }
+
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background-color: var(--crt-bg);
+      color: var(--crt-fg);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Efek Scanline sangat halus agar teks tetap tajam */
+    .scanlines {
+      background: linear-gradient(
+        rgba(18, 16, 16, 0) 50%, 
+        rgba(0, 0, 0, 0.18) 50%
+      );
+      background-size: 100% 3px;
+      pointer-events: none;
+    }
+
+    /* Tombol & Card Gaya Kotak Konsol */
+    .retro-box {
+      border: 2px solid var(--crt-border);
+      box-shadow: 2px 2px 0px var(--crt-border);
+      transition: background-color 0.1s ease, transform 0.05s ease;
+    }
+
+    .retro-box:hover:not(:disabled) {
+      background-color: var(--crt-dim);
+      border-color: var(--crt-highlight);
+      color: var(--crt-highlight);
+      transform: translate(-1px, -1px);
+      box-shadow: 3px 3px 0px var(--crt-highlight);
+    }
+
+    .retro-box:active:not(:disabled) {
+      transform: translate(2px, 2px);
+      box-shadow: 0px 0px 0px var(--crt-border);
+    }
+
+    .retro-box:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      border-color: currentColor;
+      box-shadow: none;
+    }
+
+    .retro-btn-active {
+      background-color: var(--crt-fg) !important;
+      color: #000000 !important;
+      font-weight: 800 !important;
+      border-color: var(--crt-fg) !important;
+      box-shadow: 2px 2px 0px rgba(0,0,0,0.7);
+    }
+
+    /* Cursor Berkedip Khas Konsol */
+    .blinking-cursor {
+      display: inline-block;
+      width: 8px;
+      height: 1.15em;
+      background-color: currentColor;
+      vertical-align: -2px;
+      animation: blink 0.9s infinite steps(1);
+    }
+
+    @keyframes blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+  </style>
+</head>
+<body class="min-h-screen py-3 px-2 sm:py-6 sm:px-4 flex flex-col items-center relative selection:bg-green-400 selection:text-black">
+
+  <!-- Lapisan Scanlines CRT Halus -->
+  <div class="fixed inset-0 scanlines z-50"></div>
+
+  <!-- Kontainer Utama Console Box -->
+  <main class="w-full max-w-2xl mx-auto flex flex-col z-10 border-2 border-[var(--crt-border)] p-3 sm:p-6 bg-[var(--crt-panel)] shadow-[0_0_30px_rgba(0,0,0,0.9)]">
+    
+    <!-- Top System Header Bar -->
+    <div class="flex items-center justify-between border-b-2 border-dashed border-[var(--crt-border)] pb-2 mb-4 text-xs sm:text-sm">
+      <div class="flex items-center gap-2">
+        <span class="inline-block px-1.5 py-0.5 bg-[var(--crt-fg)] text-black font-extrabold tracking-wider text-[11px] sm:text-xs">DOS v6.22</span>
+        <span class="text-xs font-semibold opacity-90">TUTORIAL_MANAGER.EXE</span>
+      </div>
+      <!-- Mode Warna CRT -->
+      <button id="theme-toggle" class="retro-box px-2 py-0.5 text-[11px] uppercase tracking-wider font-bold">
+        [F2: TEMA AMBER]
+      </button>
+    </div>
+
+    <!-- Banner Header Terminal -->
+    <header class="mb-4 text-left">
+      <pre class="font-mono text-[9px] sm:text-xs leading-none text-[var(--crt-highlight)] select-none overflow-x-hidden mb-2">
+╔══════════════════════════════════════════════════════════════════╗
+║  > ARCHIVE DATABASE // DIRECTORY OF KNOWLEDGE & CODE MANUALS     ║
+╚══════════════════════════════════════════════════════════════════╝</pre>
+      
+      <div class="mt-2 text-xs sm:text-sm leading-relaxed">
+        <div class="flex flex-wrap items-center justify-between gap-1 text-[var(--crt-text-sub)]">
+          <span>&gt; STATUS: <strong class="text-[var(--crt-highlight)]">READY</strong></span>
+          <span>&gt; TOTAL FILE: <strong id="total-count-badge" class="text-[var(--crt-highlight)]">0 ITEM</strong></span>
+          <span>&gt; HALAMAN: <strong id="page-indicator-header" class="text-[var(--crt-highlight)]">1/1</strong></span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Baris Command Prompt / Pencarian -->
+    <div class="mb-4">
+      <label for="search-input" class="block text-xs text-[var(--crt-highlight)] mb-1 font-bold tracking-wide">
+        &gt; CARI DOKUMEN / KATA KUNCI:
+      </label>
+      <div class="relative flex items-center border-2 border-[var(--crt-border)] bg-black px-3 py-2">
+        <span class="text-[var(--crt-fg)] font-bold mr-2 select-none">&gt;</span>
+        <input 
+          type="text" 
+          id="search-input" 
+          placeholder="ketik judul, topik, atau kode file..." 
+          class="w-full bg-transparent text-[var(--crt-highlight)] font-mono text-sm sm:text-base font-semibold focus:outline-none placeholder-[var(--crt-dim)]"
+          autocomplete="off"
+          spellcheck="false"
+        >
+        <span class="blinking-cursor"></span>
+      </div>
+    </div>
+
+    <!-- Filter Kategori & Pengatur Limit per Halaman -->
+    <div class="mb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b-2 border-dashed border-[var(--crt-border)] pb-3">
+      <div class="flex-1">
+        <div class="text-[11px] font-bold text-[var(--crt-text-sub)] mb-1.5 uppercase tracking-wide">
+          [ PILIH KATEGORI ]:
+        </div>
+        <nav id="category-filters" class="flex flex-wrap gap-1.5 text-xs font-bold">
+          <!-- Render tombol filter retro via JS -->
+        </nav>
+      </div>
+
+      <!-- Pilihan Items Per Page -->
+      <div class="flex items-center gap-1.5 text-xs self-start sm:self-end">
+        <span class="text-[11px] font-bold text-[var(--crt-text-sub)]">BARIS:</span>
+        <button data-limit="3" class="limit-btn retro-box px-2 py-0.5 text-xs font-bold">3</button>
+        <button data-limit="5" class="limit-btn retro-box px-2 py-0.5 text-xs font-bold retro-btn-active">5</button>
+        <button data-limit="10" class="limit-btn retro-box px-2 py-0.5 text-xs font-bold">10</button>
+      </div>
+    </div>
+
+    <!-- Output List Tutorial (Text Matrix Table) -->
+    <section aria-label="Daftar Tutorial" class="flex-1">
+      <div class="text-[11px] sm:text-xs border-b border-[var(--crt-border)] pb-1 mb-2.5 flex justify-between font-bold text-[var(--crt-highlight)] tracking-wider">
+        <span>EXEC // FILE DESCRIPTION</span>
+        <span>STATUS</span>
+      </div>
+
+      <div id="links-container" class="space-y-2.5 min-h-[220px]">
+        <!-- Item tutorial di-render di sini via JS -->
+      </div>
+    </section>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="hidden text-center py-8 border-2 border-dashed border-[var(--crt-border)] my-3 bg-black">
+      <p class="text-sm font-bold text-red-400">&lt; ERROR 404: FILE NOT FOUND &gt;</p>
+      <p class="text-xs text-[var(--crt-text-sub)] mt-1">Tidak ada modul yang cocok dengan kata kunci atau filter.</p>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- FITUR PAGING / PAGINATION (DOS STYLE)      -->
+    <!-- ========================================== -->
+    <nav id="pagination-wrapper" class="mt-4 pt-3 border-t-2 border-dashed border-[var(--crt-border)] flex flex-wrap items-center justify-between gap-2" aria-label="Navigasi Halaman">
+      <div class="flex items-center gap-1.5">
+        <button id="btn-prev" class="retro-box px-2.5 py-1 text-xs font-bold bg-black" title="Halaman Sebelumnya">
+          &lt; [PREV]
+        </button>
+        <div id="pagination-numbers" class="flex items-center gap-1">
+          <!-- Tombol angka halaman di-render via JS -->
+        </div>
+        <button id="btn-next" class="retro-box px-2.5 py-1 text-xs font-bold bg-black" title="Halaman Selanjutnya">
+          [NEXT] &gt;
+        </button>
+      </div>
+
+      <div class="text-xs text-[var(--crt-text-sub)] font-semibold">
+        DATA <span id="page-data-range" class="text-[var(--crt-highlight)] font-bold">0-0</span> DARI <span id="page-data-total" class="text-[var(--crt-highlight)] font-bold">0</span>
+      </div>
+    </nav>
+
+    <!-- Console Status Footer -->
+    <footer class="mt-4 pt-2 border-t border-[var(--crt-dim)] text-center text-xs opacity-75">
+      <div class="text-[11px] text-[var(--crt-text-sub)]">
+        NAVIGASI: KLIK / SENTUH TOMBOL • RESPONSIF DI HP & DESKTOP
+      </div>
+      <div class="mt-1 text-[10px] opacity-60">
+        © 1995-2026 TUTORIAL_OS • RETRO TEXT BASED PORTAL
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- JAVASCRIPT LOGIC & DATABASE -->
+  <script>
+    /**
+     * =========================================================================
+     * PUSAT PENGATURAN DATA TUTORIAL / EBOOK
+     * =========================================================================
+     * Tambahkan / edit modul belajar Anda dengan mudah pada array di bawah ini:
+     */
+    const linksData = [
+      {
+        idCode: "AND-01",
+        title: "Memulai Membuat Program Android - Java",
+        description: "Setup IDE, struktur project, dasar Activity, layouting XML & Java syntax lengkap.",
+        category: "ANDROID",
+        url: "https://ebony-shell-0e3.notion.site/Memulai-Pengembangan-Aplikasi-Android-Menggunakan-Java-29f6b505c7fd82498b46811175033fe3?source=copy_link",
+        isNew: true
+      },
+      {
+        idCode: "AND-02",
+        title: "Panduan Dasar Kotlin untuk Pemula",
+        description: "Variabel, Null Safety, Coroutine sederhana & konsep OOP modern Android.",
+        category: "ANDROID",
+        url: "#",
+        isNew: false
+      },
+      {
+        idCode: "AND-03",
+        title: "Jetpack Compose: Modern UI Android",
+        description: "Membuat tampilan Android deklaratif tanpa file XML layout tradisional.",
+        category: "ANDROID",
+        url: "#",
+        isNew: false
+      },
+      {
+        idCode: "WEB-01",
+        title: "Fundamental HTML5, CSS3 & Responsive UI",
+        description: "Struktur semantik dokumen, flexbox, CSS Grid dan teknik desain web mobile.",
+        category: "WEB DEV",
+        url: "#",
+        isNew: false
+      },
+      {
+        idCode: "WEB-02",
+        title: "JavaScript Modern (ES6+): Asynchronous & Fetch",
+        description: "Menguasai Promise, async/await, DOM manipulation, dan integrasi API publik.",
+        category: "WEB DEV",
+        url: "#",
+        isNew: false
+      },
+      {
+        idCode: "SRV-01",
+        title: "Fullstack JS: REST API dengan Node.js & Express",
+        description: "Arsitektur Express, routing, JWT Authentication & integrasi basis data MongoDB.",
+        category: "BACKEND",
+        url: "#",
+        isNew: false
+      },
+      {
+        idCode: "SRV-02",
+        title: "Belajar Database SQL: PostgreSQL Dasar",
+        description: "Query SELECT, JOIN, relasi tabel, indexing performa, dan manajemen transaksi.",
+        category: "BACKEND",
+        url: "#",
+        isNew: false
+      },
+      {
+        idCode: "BAS-01",
+        title: "Logika Pemrograman & Algoritma Komputer",
+        description: "Flowchart, pseudocode, array matrix, bubble sort & computational thinking.",
+        category: "DASAR",
+        url: "#",
+        isNew: false
+      },
+      {
+        idCode: "GIT-01",
+        title: "Git & GitHub: Panduan Version Control Tim",
+        description: "Branching, merge conflict, pull request, dan workflow kolaborasi industri.",
+        category: "TOOLS",
+        url: "#",
+        isNew: false
+      },
+      {
+        idCode: "PY-01",
+        title: "Python untuk Automasi Tugas Harian",
+        description: "Web scraping dengan BeautifulSoup, manipulasi file excel & pengiriman bot telegram.",
+        category: "PYTHON",
+        url: "#",
+        isNew: true
+      }
+    ];
+
+    // Status State
+    let activeCategory = "SEMUA";
+    let searchQuery = "";
+    let currentPage = 1;
+    let itemsPerPage = 5;
+
+    // DOM Elements
+    const container = document.getElementById("links-container");
+    const emptyState = document.getElementById("empty-state");
+    const searchInput = document.getElementById("search-input");
+    const filterContainer = document.getElementById("category-filters");
+    const totalBadge = document.getElementById("total-count-badge");
+    const headerPageIndicator = document.getElementById("page-indicator-header");
+    const themeBtn = document.getElementById("theme-toggle");
+    
+    // Pagination Elements
+    const paginationWrapper = document.getElementById("pagination-wrapper");
+    const paginationNumbers = document.getElementById("pagination-numbers");
+    const btnPrev = document.getElementById("btn-prev");
+    const btnNext = document.getElementById("btn-next");
+    const pageDataRange = document.getElementById("page-data-range");
+    const pageDataTotal = document.getElementById("page-data-total");
+    const limitBtns = document.querySelectorAll(".limit-btn");
+
+    // Toggle Tema (Green Phosphor vs Amber Phosphor)
+    let isAmber = false;
+    themeBtn.addEventListener("click", () => {
+      isAmber = !isAmber;
+      if (isAmber) {
+        document.body.classList.add("theme-amber");
+        themeBtn.textContent = "[F2: TEMA HIJAU]";
+      } else {
+        document.body.classList.remove("theme-amber");
+        themeBtn.textContent = "[F2: TEMA AMBER]";
+      }
+    });
+
+    // Pilihan Limit Items Per Page
+    limitBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        limitBtns.forEach(b => b.classList.remove("retro-btn-active"));
+        btn.classList.add("retro-btn-active");
+        itemsPerPage = parseInt(btn.getAttribute("data-limit"), 10);
+        currentPage = 1; // reset ke halaman pertama
+        renderLinks();
+      });
+    });
+
+    // Inisialisasi Tombol Kategori
+    function setupCategories() {
+      const rawCategories = ["SEMUA", ...new Set(linksData.map(item => item.category.toUpperCase()))];
+      filterContainer.innerHTML = "";
+
+      rawCategories.forEach(category => {
+        const btn = document.createElement("button");
+        const isActive = category === activeCategory;
+        btn.textContent = `[ ${category} ]`;
+        btn.className = `retro-box px-2 py-0.5 text-[11px] sm:text-xs uppercase font-mono tracking-wider ${
+          isActive ? "retro-btn-active font-extrabold" : "bg-black text-[var(--crt-fg)]"
+        }`;
+        
+        btn.addEventListener("click", () => {
+          activeCategory = category;
+          currentPage = 1; // reset halaman saat filter berganti
+          setupCategories();
+          renderLinks();
+        });
+
+        filterContainer.appendChild(btn);
+      });
+    }
+
+    // Dapatkan data terfilter berdasarkan kategori & pencarian
+    function getFilteredData() {
+      const query = searchQuery.toLowerCase().trim();
+      return linksData.filter(item => {
+        const matchCat = activeCategory === "SEMUA" || item.category.toUpperCase() === activeCategory;
+        const matchSearch = item.title.toLowerCase().includes(query) ||
+                            item.description.toLowerCase().includes(query) ||
+                            item.category.toLowerCase().includes(query) ||
+                            (item.idCode && item.idCode.toLowerCase().includes(query));
+        return matchCat && matchSearch;
+      });
+    }
+
+    // Render Kontrol Pagination
+    function renderPagination(totalItems, totalPages) {
+      if (totalItems === 0) {
+        paginationWrapper.classList.add("hidden");
+        return;
+      }
+      paginationWrapper.classList.remove("hidden");
+
+      // Hitung range baris yang sedang tampil
+      const startItem = (currentPage - 1) * itemsPerPage + 1;
+      const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+      
+      pageDataRange.textContent = `${startItem}-${endItem}`;
+      pageDataTotal.textContent = `${totalItems}`;
+      headerPageIndicator.textContent = `${currentPage}/${totalPages || 1}`;
+
+      // Tombol Previous & Next
+      btnPrev.disabled = currentPage <= 1;
+      btnNext.disabled = currentPage >= totalPages;
+
+      // Render nomor halaman
+      paginationNumbers.innerHTML = "";
+
+      // Logika windowing nomor halaman (maks 5 nomor terlihat)
+      let startP = Math.max(1, currentPage - 2);
+      let endP = Math.min(totalPages, startP + 4);
+      if (endP - startP < 4) {
+        startP = Math.max(1, endP - 4);
+      }
+
+      for (let p = startP; p <= endP; p++) {
+        const pageBtn = document.createElement("button");
+        pageBtn.textContent = p;
+        pageBtn.className = `retro-box w-7 h-7 flex items-center justify-center text-xs font-bold ${
+          p === currentPage ? "retro-btn-active" : "bg-black text-[var(--crt-fg)]"
+        }`;
+        pageBtn.addEventListener("click", () => {
+          currentPage = p;
+          renderLinks();
+        });
+        paginationNumbers.appendChild(pageBtn);
+      }
+    }
+
+    // Event Listener Navigasi Pagination
+    btnPrev.addEventListener("click", () => {
+      if (currentPage > 1) {
+        currentPage--;
+        renderLinks();
+      }
+    });
+
+    btnNext.addEventListener("click", () => {
+      const filtered = getFilteredData();
+      const totalPages = Math.ceil(filtered.length / itemsPerPage);
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderLinks();
+      }
+    });
+
+    // Render Kartu Tautan Retro
+    function renderLinks() {
+      const filtered = getFilteredData();
+      const totalPages = Math.ceil(filtered.length / itemsPerPage);
+
+      // Koreksi jika currentPage melebihi totalPages setelah filter
+      if (currentPage > totalPages && totalPages > 0) {
+        currentPage = totalPages;
+      } else if (totalPages === 0) {
+        currentPage = 1;
+      }
+
+      totalBadge.textContent = `${linksData.length} FILE`;
+      container.innerHTML = "";
+
+      if (filtered.length === 0) {
+        emptyState.classList.remove("hidden");
+        renderPagination(0, 0);
+        return;
+      }
+
+      emptyState.classList.add("hidden");
+
+      // Potong data sesuai pagination
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const pagedData = filtered.slice(startIndex, startIndex + itemsPerPage);
+
+      pagedData.forEach((item, index) => {
+        const card = document.createElement("a");
+        card.href = item.url;
+        card.target = "_blank";
+        card.rel = "noopener noreferrer";
+        card.className = "retro-box group block p-2.5 sm:p-3.5 bg-black no-underline text-inherit cursor-pointer";
+
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-2.5">
+            <div class="flex-1 min-w-0">
+              <div class="flex flex-wrap items-center gap-1.5 text-xs font-bold mb-1">
+                <span class="text-[var(--crt-highlight)] tracking-wide font-extrabold">&gt;&gt; ${item.idCode || `F0${index+1}`}</span>
+                <span class="opacity-40">|</span>
+                <span class="text-[10px] px-1.5 py-0.2 bg-[var(--crt-badge)] border border-[var(--crt-border)] uppercase font-semibold text-[var(--crt-highlight)]">
+                  ${item.category}
+                </span>
+                ${item.isNew ? '<span class="text-[10px] px-1.5 py-0.2 bg-yellow-400 text-black font-extrabold">NEW</span>' : ''}
+              </div>
+
+              <h2 class="text-sm sm:text-base font-extrabold tracking-normal group-hover:underline break-words text-white leading-snug">
+                ${item.title}
+              </h2>
+
+              <p class="text-xs font-medium text-[var(--crt-text-sub)] mt-1 line-clamp-2 leading-relaxed">
+                ${item.description}
+              </p>
+            </div>
+
+            <!-- Tombol Aksi Buka File -->
+            <div class="self-center flex-shrink-0 ml-1">
+              <span class="inline-flex items-center gap-1 text-[11px] sm:text-xs border border-[var(--crt-border)] px-2 py-1 font-bold group-hover:bg-[var(--crt-fg)] group-hover:text-black">
+                BUKA &rarr;
+              </span>
+            </div>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+
+      renderPagination(filtered.length, totalPages);
+    }
+
+    // Input Filter Event Listener
+    searchInput.addEventListener("input", (e) => {
+      searchQuery = e.target.value;
+      currentPage = 1; // reset ke page 1 tiap mengetik
+      renderLinks();
+    });
+
+    // Inisialisasi awal
+    setupCategories();
+    renderLinks();
+  </script>
+</body>
+</html>
